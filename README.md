@@ -31,6 +31,10 @@ Install the required dependencies using pip:
 pip install flask opencv-python numpy
 ```
 
+## Output
+
+![Screenshot](output.png "Screenshot")
+
 ## Configuration
 
 ### Parking Space Definition
