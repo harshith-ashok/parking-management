@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parking Monitoring</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              success: "#22c55e",
+              danger: "#ef4444",
+              primary: "#1e293b",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body class="bg-gray-950 text-gray-200 min-h-screen p-6">
+    <div class="max-w-7xl mx-auto space-y-8">
+      <!-- Header -->
+      <header class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold tracking-wide">
+          Parking Monitoring System
+        </h1>
+        <span
+          class="text-xs text-gray-400 uppercase tracking-widest border px-2 py-1 rounded"
+        >
+          Live Feed Active
+        </span>
+      </header>
+
+      <div class="grid lg:grid-cols-3 gap-8 items-start">
+        <!-- Video Panel -->
+        <section
+          class="lg:col-span-2 bg-primary rounded-xl shadow-xl border border-gray-800 p-4"
+        >
+          <div class="rounded-lg overflow-hidden border border-gray-700">
+            <img
+              src="{{ url_for('video_feed') }}"
+              class="w-full object-cover"
+              alt="Live Parking Feed"
+            />
+          </div>
+
+          <!-- Legend -->
+          <div class="flex gap-6 mt-4 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 bg-success rounded-full"></span> Free
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 bg-danger rounded-full"></span> Occupied
+            </div>
+          </div>
+        </section>
+
+        <!-- Stats -->
+        <aside class="space-y-4">
+          <div
+            class="bg-primary rounded-xl p-6 border border-gray-800 text-center shadow-md"
+          >
+            <h3 class="text-gray-400 text-sm uppercase">Total Slots</h3>
+            <p id="total-slots" class="text-4xl font-bold mt-2 text-white">0</p>
+          </div>
+
+          <div
+            class="bg-primary rounded-xl p-6 border border-gray-800 text-center shadow-md"
+          >
+            <h3 class="text-gray-400 text-sm uppercase">Occupied</h3>
+            <p id="occupied-slots" class="text-4xl font-bold mt-2 text-danger">
+              0
+            </p>
+          </div>
+
+          <div
+            class="bg-primary rounded-xl p-6 border border-gray-800 text-center shadow-md"
+          >
+            <h3 class="text-gray-400 text-sm uppercase">Available</h3>
+            <p id="free-slots" class="text-4xl font-bold mt-2 text-success">
+              0
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Slot Detail Panel -->
+      <section
+        class="bg-primary rounded-xl border border-gray-800 p-6 shadow-xl max-h-96 overflow-y-auto"
+      >
+        <h3 class="text-lg font-semibold border-b border-gray-700 pb-3 mb-4">
+          Slot Details
+        </h3>
+        <div id="slots-list" class="space-y-3"></div>
+      </section>
+    </div>
+
+    <!-- Live Slot Status Update -->
+    <script>
+      function updateSlotStatus() {
+        fetch("/slots")
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("total-slots").textContent = data.total;
+            document.getElementById("occupied-slots").textContent =
+              data.occupied;
+            document.getElementById("free-slots").textContent = data.free;
+
+            const list = document.getElementById("slots-list");
+            list.innerHTML = "";
+
+            for (const [id, slot] of Object.entries(data.slots)) {
+              list.innerHTML += `
+              <div class="flex justify-between items-center bg-gray-800 rounded-lg px-4 py-3">
+                <span class="font-semibold text-gray-300">${id}</span>
+                <span class="px-3 py-1 text-xs font-bold rounded-full ${
+                  slot.occupied
+                    ? "bg-danger text-black"
+                    : "bg-success text-black"
+                }">
+                  ${slot.occupied ? "Occupied" : "Free"}
+                </span>
+              </div>
+            `;
+            }
+          })
+          .catch((err) => console.error("Error fetching slot data:", err));
+      }
+
+      setInterval(updateSlotStatus, 800);
+      updateSlotStatus();
+    </script>
+  </body>
+</html>
